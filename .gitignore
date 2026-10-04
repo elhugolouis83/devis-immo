@@ -50,3 +50,8 @@ skills-lock.json
 
 # local Claude Code session settings
 /.claude/settings.local.json
+
+# local SQLite database
+/prisma/dev.db
+/dev.db
+*.db-journal

@@ -11,3 +11,85 @@ generator client {
 datasource db {
   provider = "sqlite"
 }
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  companyName  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  subscription Subscription?
+  clients      Client[]
+  devis        Devis[]
+  sessions     Session[]
+}
+
+model Session {
+  id        String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Subscription {
+  id                   String    @id @default(cuid())
+  userId               String    @unique
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?   @unique
+  status               String    @default("inactive") // inactive, active, canceled, past_due
+  currentPeriodEnd     DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}
+
+model Client {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  address   String
+  zipCode   String
+  city      String
+  email     String?
+  phone     String?
+  createdAt DateTime @default(now())
+
+  devis     Devis[]
+}
+
+model Devis {
+  id         String       @id @default(cuid())
+  number     String // ex: DEV-2026-001
+  userId     String
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clientId   String
+  client     Client       @relation(fields: [clientId], references: [id])
+  status     String       @default("brouillon") // brouillon, envoye, accepte, refuse
+  issuedAt   DateTime     @default(now())
+  validUntil DateTime?
+  totalHT    Float        @default(0)
+  totalTVA   Float        @default(0)
+  totalTTC   Float        @default(0)
+  sentAt     DateTime?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  lignes     LigneDevis[]
+
+  @@unique([userId, number])
+}
+
+model LigneDevis {
+  id             String @id @default(cuid())
+  devisId        String
+  devis          Devis  @relation(fields: [devisId], references: [id], onDelete: Cascade)
+  description    String
+  quantite       Float  @default(1)
+  prixUnitaireHT Float
+  tauxTVA        Float  @default(5.5) // 5.5, 10 ou 20 selon éligibilité
+  totalLigneHT   Float
+  ordre          Int    @default(0)
+}
