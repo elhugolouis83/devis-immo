@@ -1,9 +1,7 @@
-import { createElement, type ReactElement } from "react";
 import { NextResponse } from "next/server";
-import { renderToBuffer, type DocumentProps } from "@react-pdf/renderer";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { DevisDocument } from "@/lib/pdf/DevisDocument";
+import { generateDevisPdf } from "@/lib/pdf/generateDevisPdf";
 
 export const runtime = "nodejs";
 
@@ -26,15 +24,10 @@ export async function GET(
     return NextResponse.json({ error: "Devis introuvable." }, { status: 404 });
   }
 
-  // DevisDocument renders a <Document> at its root, but its own prop type
-  // (devis/emetteur) differs from DocumentProps — react-pdf's types want the
-  // latter, so we assert what we know to be true about the rendered tree.
-  const element = createElement(DevisDocument, {
+  const buffer = await generateDevisPdf({
     devis,
     emetteur: { nom: user.companyName || user.email },
-  }) as ReactElement<DocumentProps>;
-
-  const buffer = await renderToBuffer(element);
+  });
 
   return new NextResponse(new Uint8Array(buffer), {
     headers: {

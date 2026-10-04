@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   },
 });
 
-type DevisDocumentProps = {
+export type DevisDocumentProps = {
   devis: {
     number: string;
     status: string;

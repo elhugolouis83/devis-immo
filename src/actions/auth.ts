@@ -44,7 +44,7 @@ export async function signup(
   });
 
   await createSession(user.id);
-  redirect("/app");
+  redirect("/app/devis/nouveau?bienvenue=1");
 }
 
 export async function login(

@@ -20,7 +20,7 @@ export default async function DevisListPage() {
         <h1 className="font-display text-2xl font-semibold text-ink">Devis</h1>
         <Link
           href="/app/devis/nouveau"
-          className="rounded-md bg-brick px-4 py-2 text-sm font-medium text-paper hover:bg-brick-dark"
+          className="press-hard border-2 border-ink bg-brick px-4 py-2 text-sm font-medium text-paper shadow-hard-sm"
         >
           + Nouveau devis
         </Link>

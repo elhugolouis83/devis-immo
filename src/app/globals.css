@@ -26,8 +26,53 @@
   --font-sans: var(--font-plex-sans);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Hard, unblurred offset shadows — the product's signature tactile detail.
+   Deliberately not a soft/blurred shadow: reads as drafted, not generic SaaS. */
+.shadow-hard {
+  box-shadow: 6px 6px 0 0 var(--color-ink);
+}
+.shadow-hard-sm {
+  box-shadow: 3px 3px 0 0 var(--color-ink);
+}
+.shadow-hard-brick {
+  box-shadow: 6px 6px 0 0 var(--color-brick);
+}
+
+.press-hard {
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+.press-hard:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0 0 var(--color-ink);
+}
+.press-hard:active {
+  transform: translate(3px, 3px);
+  box-shadow: 3px 3px 0 0 var(--color-ink);
+}
+
+/* Blueprint-style dot grid, used sparingly on the landing page only. */
+.bg-dot-grid {
+  background-image: radial-gradient(var(--color-line) 1.5px, transparent 1.5px);
+  background-size: 20px 20px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .press-hard {
+    transition: none;
+  }
 }

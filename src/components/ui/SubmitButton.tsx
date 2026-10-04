@@ -9,7 +9,7 @@ export function SubmitButton({ children }: { children: React.ReactNode }) {
     <button
       type="submit"
       disabled={pending}
-      className="w-full rounded-md bg-brick px-4 py-2.5 text-sm font-medium text-paper transition-colors hover:bg-brick-dark disabled:opacity-60"
+      className="press-hard w-full border-2 border-ink bg-brick px-4 py-2.5 text-sm font-medium text-paper shadow-hard-sm disabled:translate-x-0 disabled:translate-y-0 disabled:opacity-60 disabled:shadow-hard-sm"
     >
       {pending ? "Un instant…" : children}
     </button>

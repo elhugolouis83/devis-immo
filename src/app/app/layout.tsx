@@ -28,6 +28,9 @@ export default async function AppLayout({
           </nav>
         </div>
         <div className="flex items-center gap-4 text-sm text-ink-soft">
+          <Link href="/app/reglages" className="hover:text-ink">
+            Réglages
+          </Link>
           <span>{user.email}</span>
           <form action={logout}>
             <button type="submit" className="underline underline-offset-2 hover:text-ink">

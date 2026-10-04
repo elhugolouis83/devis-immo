@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formaterMontant } from "@/lib/montants";
 import { MENTIONS_CGV, MENTIONS_DISCLAIMER } from "@/lib/legal";
+import { EnvoyerDevisButton } from "@/components/devis/EnvoyerDevisButton";
 
 export default async function DevisDetailPage({
   params,
@@ -46,14 +47,30 @@ export default async function DevisDetailPage({
       </div>
 
       <div className="mt-6 rounded-lg border border-line bg-white p-6">
-        <h2 className="font-display text-lg font-semibold text-ink">Client</h2>
-        <p className="mt-2 text-sm text-ink">{devis.client.name}</p>
-        <p className="text-sm text-ink-soft">
-          {devis.client.address}, {devis.client.zipCode} {devis.client.city}
-        </p>
-        {devis.client.email && (
-          <p className="text-sm text-ink-soft">{devis.client.email}</p>
-        )}
+        <div className="flex items-start justify-between gap-6">
+          <div>
+            <h2 className="font-display text-lg font-semibold text-ink">Client</h2>
+            <p className="mt-2 text-sm text-ink">{devis.client.name}</p>
+            <p className="text-sm text-ink-soft">
+              {devis.client.address}, {devis.client.zipCode} {devis.client.city}
+            </p>
+            {devis.client.email && (
+              <p className="text-sm text-ink-soft">{devis.client.email}</p>
+            )}
+          </div>
+          <div className="text-right">
+            <EnvoyerDevisButton
+              devisId={devis.id}
+              clientEmail={devis.client.email}
+              dejaEnvoye={!!devis.sentAt}
+            />
+            {devis.sentAt && (
+              <p className="mt-1 text-xs text-ink-soft">
+                Envoyé le {new Intl.DateTimeFormat("fr-FR").format(devis.sentAt)}
+              </p>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="mt-6 rounded-lg border border-line bg-white p-6">
@@ -121,13 +138,10 @@ export default async function DevisDetailPage({
         <p className="mt-3 text-xs text-ink-soft/80">{MENTIONS_DISCLAIMER}</p>
       </div>
 
-      <div className="mt-6 flex items-center justify-between">
+      <div className="mt-6">
         <Link href="/app/devis" className="text-sm text-ink-soft underline underline-offset-2">
           ← Tous les devis
         </Link>
-        <p className="text-xs text-ink-soft">
-          Envoi par email au client disponible à la prochaine étape.
-        </p>
       </div>
     </div>
   );

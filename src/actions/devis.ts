@@ -1,12 +1,17 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { creerDevisSchema } from "@/lib/validation";
-import { calculerLigne, calculerTotaux } from "@/lib/montants";
+import { calculerLigne, calculerTotaux, formaterMontant } from "@/lib/montants";
+import { generateDevisPdf } from "@/lib/pdf/generateDevisPdf";
+import { envoyerEmailDevis } from "@/lib/email";
+import { getAccesStatus } from "@/lib/subscription";
 
 export type DevisFormState = { error: string } | undefined;
+export type EnvoiEmailState = { error: string } | { success: true } | undefined;
 
 async function prochainNumero(userId: string) {
   const annee = new Date().getFullYear();
@@ -23,6 +28,11 @@ export async function creerDevis(
 ): Promise<DevisFormState> {
   const user = await getCurrentUser();
   if (!user) redirect("/connexion");
+
+  const { peutCreerDevis } = await getAccesStatus(user.id);
+  if (!peutCreerDevis) {
+    return { error: "Essai gratuit terminé — abonne-toi depuis les Réglages pour continuer." };
+  }
 
   let lignesBrutes: unknown;
   try {
@@ -106,4 +116,54 @@ export async function creerDevis(
   });
 
   redirect(`/app/devis/${devis.id}`);
+}
+
+export async function envoyerDevisParEmail(
+  devisId: string,
+  _prevState: EnvoiEmailState,
+): Promise<EnvoiEmailState> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/connexion");
+
+  const devis = await prisma.devis.findFirst({
+    where: { id: devisId, userId: user.id },
+    include: { client: true, lignes: { orderBy: { ordre: "asc" } } },
+  });
+
+  if (!devis) {
+    return { error: "Devis introuvable." };
+  }
+
+  if (!devis.client.email) {
+    return { error: "Ce client n'a pas d'adresse email enregistrée." };
+  }
+
+  const emetteurNom = user.companyName || user.email;
+
+  try {
+    const pdfBuffer = await generateDevisPdf({
+      devis,
+      emetteur: { nom: emetteurNom },
+    });
+
+    await envoyerEmailDevis({
+      to: devis.client.email,
+      clientNom: devis.client.name,
+      emetteurNom,
+      devisNumber: devis.number,
+      totalTTC: formaterMontant(devis.totalTTC),
+      pdfBuffer: Buffer.from(pdfBuffer),
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Erreur inconnue.";
+    return { error: `Échec de l'envoi : ${message}` };
+  }
+
+  await prisma.devis.update({
+    where: { id: devis.id },
+    data: { status: "envoye", sentAt: new Date() },
+  });
+
+  revalidatePath(`/app/devis/${devis.id}`);
+  return { success: true };
 }
