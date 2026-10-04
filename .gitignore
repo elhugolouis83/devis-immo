@@ -30,8 +30,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files (.env.example is intentionally NOT ignored — safe template, no secrets)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -50,8 +51,3 @@ skills-lock.json
 
 # local Claude Code session settings
 /.claude/settings.local.json
-
-# local SQLite database
-/prisma/dev.db
-/dev.db
-*.db-journal
